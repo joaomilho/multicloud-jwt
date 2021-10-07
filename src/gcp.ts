@@ -55,7 +55,7 @@ export class GCP extends BaseClass {
   }
 
   async verify(jwt: string) {
-    const jwtData = this.getJwtData(jwt);
+    const jwtData = this.parse(jwt);
 
     const [publicKey] = await this.kms.getPublicKey({
       name: this.versionName,

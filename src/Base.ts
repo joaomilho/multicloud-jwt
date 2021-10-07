@@ -8,7 +8,7 @@ interface Base {
 
   verify(jwt: string): Promise<boolean>;
 
-  getJwtData(jwt: string): {
+  parse(jwt: string): {
     header: Record<any, string>;
     payload: Record<any, string>;
     signature: string;
@@ -53,7 +53,7 @@ export class BaseClass implements Base {
     throw new Error("Not implemented");
   }
 
-  getJwtData(jwt: string): {
+  parse(jwt: string): {
     header: Record<any, string>;
     payload: Record<any, string>;
     signature: string;

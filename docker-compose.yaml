@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  kms:
+    image: nsmithuk/local-kms
+    volumes:
+      - ./init:/init
+      - ./data:/data
+    ports:
+      - 8081:8080
