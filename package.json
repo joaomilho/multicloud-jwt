@@ -1,0 +1,14 @@
+{
+  "name": "multicloud-jwt",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/kms": "^2.8.1",
+    "@types/node": "^16.10.3",
+    "aws-sdk": "^2.1002.0",
+    "base64url": "^3.0.1",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  }
+}
