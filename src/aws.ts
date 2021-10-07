@@ -4,13 +4,12 @@ import { BaseClass } from "./Base";
 
 export class AWS extends BaseClass {
   kms: KMS;
+  keyId: string;
 
-  constructor(
-    public masterKeyAlias: string,
-    clientConfig: KMS.ClientConfiguration
-  ) {
+  constructor(props: { keyId: string } & KMS.ClientConfiguration) {
     super();
-    this.kms = new KMS(clientConfig);
+    this.keyId = props.keyId;
+    this.kms = new KMS(props);
   }
 
   async sign(
@@ -25,7 +24,7 @@ export class AWS extends BaseClass {
         SigningAlgorithm: "RSASSA_PSS_SHA_256",
         ...signReq,
         Message: body,
-        KeyId: this.masterKeyAlias,
+        KeyId: this.keyId,
       })
       .promise();
 
@@ -39,7 +38,7 @@ export class AWS extends BaseClass {
 
     const result = await this.kms
       .verify({
-        KeyId: this.masterKeyAlias,
+        KeyId: this.keyId,
         Message: jwtData.message,
         Signature: Buffer.from(jwtData.signature, "base64"),
         SigningAlgorithm: "RSASSA_PSS_SHA_256",
