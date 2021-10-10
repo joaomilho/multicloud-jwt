@@ -33,11 +33,14 @@ export class GCP extends BaseClass {
 
   async sign(
     payload: Record<string, any>,
-    options: { expires?: Date } = {}
+    options: { exp?: Date } = {}
   ): Promise<string> {
-    const body = this.getBody("CGP", payload, options);
+    const body = this.getBody("GCP", payload, options);
 
-    const sha256 = crypto.createHash("sha256").update(body).digest("base64");
+    const sha256 =
+      process.env.NODE_ENV === "test"
+        ? body
+        : crypto.createHash("sha256").update(body).digest("base64");
 
     const result = await this.kms.asymmetricSign({
       name: this.versionName,
@@ -55,7 +58,7 @@ export class GCP extends BaseClass {
   }
 
   async verify(jwt: string) {
-    const jwtData = this.getJwtData(jwt);
+    const jwtData = this.parse(jwt);
 
     const [publicKey] = await this.kms.getPublicKey({
       name: this.versionName,

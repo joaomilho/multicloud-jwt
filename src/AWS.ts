@@ -14,8 +14,8 @@ export class AWS extends BaseClass {
 
   async sign(
     payload: Record<string, any>,
-    options: { expires?: Date } = {},
-    signReq?: KMS.SignRequest
+    options: { exp?: Date } = {},
+    signReq?: Omit<KMS.SignRequest, "Message" | "KeyId">
   ): Promise<string> {
     const body = this.getBody("AWS", payload, options);
 
@@ -34,17 +34,21 @@ export class AWS extends BaseClass {
   }
 
   async verify(jwt: string): Promise<boolean> {
-    const jwtData = this.getJwtData(jwt);
+    const jwtData = this.parse(jwt);
 
-    const result = await this.kms
-      .verify({
-        KeyId: this.keyId,
-        Message: jwtData.message,
-        Signature: Buffer.from(jwtData.signature, "base64"),
-        SigningAlgorithm: "RSASSA_PSS_SHA_256",
-      })
-      .promise();
+    try {
+      const result = await this.kms
+        .verify({
+          KeyId: this.keyId,
+          Message: jwtData.message,
+          Signature: Buffer.from(jwtData.signature, "base64"),
+          SigningAlgorithm: "RSASSA_PSS_SHA_256",
+        })
+        .promise();
 
-    return !!result.SignatureValid;
+      return !!result.SignatureValid;
+    } catch (e) {
+      return false;
+    }
   }
 }

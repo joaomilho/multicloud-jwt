@@ -1,14 +1,56 @@
 import base64url from "base64url";
+import { z } from "zod";
+
+const Payload = z
+  .object({
+    iat: z
+      .number()
+      .transform((iat) => {
+        return new Date(
+          iat * 1000 - 1000 * 60 * 5 // 5 min diff
+        );
+      })
+      .refine(
+        (iat) => {
+          return iat.getTime() < Date.now();
+        },
+        {
+          message: "Token was issued after the current time",
+        }
+      ),
+    exp: z.optional(
+      z
+        .number()
+        .transform((exp) => {
+          return new Date(exp * 1000);
+        })
+        .refine(
+          (exp) => {
+            return exp.getTime() >= Date.now();
+          },
+          {
+            message: "Token is expired",
+          }
+        )
+    ),
+  })
+  .passthrough(); // allows unknown keys
+
+type Payload = z.infer<typeof Payload> & { [key: string]: any };
+
+const Header = z.object({
+  alg: z.enum(["GCP", "AWS"]),
+  typ: z.literal("JWT"),
+});
+
+type Header = z.infer<typeof Header>;
 
 interface Base {
-  sign(
-    payload: Record<string, any>,
-    options: { expires?: Date }
-  ): Promise<string>;
+  sign(payload: Payload, options: { exp?: Date }): Promise<string>;
 
   verify(jwt: string): Promise<boolean>;
 
-  getJwtData(jwt: string): {
+  parse(jwt: string): {
     header: Record<any, string>;
     payload: Record<any, string>;
     signature: string;
@@ -18,11 +60,11 @@ interface Base {
 
 export class BaseClass implements Base {
   protected getBody(
-    alg: "CGP" | "AWS",
+    alg: Header["alg"],
     payload: Record<string, any>,
-    options: { expires?: Date } = {}
+    options: { exp?: Date } = {}
   ) {
-    const header = {
+    const header: Header = {
       alg,
       typ: "JWT",
     };
@@ -30,9 +72,7 @@ export class BaseClass implements Base {
     payload = {
       ...payload,
       iat: Math.floor(Date.now() / 1000),
-      ...(options.expires
-        ? { exp: Math.ceil(options.expires.getTime() / 1000) }
-        : {}),
+      ...(options.exp ? { exp: Math.ceil(options.exp.getTime() / 1000) } : {}),
     };
 
     const header64 = base64url(JSON.stringify(header));
@@ -43,7 +83,7 @@ export class BaseClass implements Base {
 
   sign(
     payload: Record<string, any>,
-    options: { expires?: Date },
+    options: { exp?: Date },
     config?: any
   ): Promise<string> {
     throw new Error("Not implemented");
@@ -53,9 +93,9 @@ export class BaseClass implements Base {
     throw new Error("Not implemented");
   }
 
-  getJwtData(jwt: string): {
+  parse(jwt: string): {
     header: Record<any, string>;
-    payload: Record<any, string>;
+    payload: Payload;
     signature: string;
     message: string;
   } {
@@ -63,39 +103,20 @@ export class BaseClass implements Base {
       throw new Error("Invalid Token");
     }
 
-    const [header, payload, signature] = jwt.split(".");
+    const [rawHeader, rawPayload, signature] = jwt.split(".");
+
+    const jsonPayload = JSON.parse(base64url.decode(rawPayload));
+    const payload = Payload.parse(jsonPayload);
 
     try {
       return {
-        message: `${header}.${payload}`,
-        header: JSON.parse(base64url.decode(header)),
-        payload: JSON.parse(base64url.decode(payload)),
+        message: `${rawHeader}.${rawPayload}`,
+        header: JSON.parse(base64url.decode(rawHeader)),
+        payload,
         signature,
       };
     } catch (err) {
       throw err; //new Error("Invalid Token");
-    }
-  }
-
-  private checkIssuedTime(issuedAt: string) {
-    if (issuedAt) {
-      const iat = new Date(
-        parseInt(issuedAt) * 1000 - 1000 * 60 * 5 // 10 min diff
-      ).getTime();
-
-      if (iat >= Date.now()) {
-        throw new Error("Token was issued after the current time");
-      }
-    }
-  }
-
-  private checkExpiration(expiresAt: string) {
-    if (expiresAt) {
-      const exp = new Date(parseInt(expiresAt) * 1000).getTime();
-
-      if (exp < Date.now()) {
-        throw new Error("Token is expired");
-      }
     }
   }
 }

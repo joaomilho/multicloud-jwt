@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "declaration": true,
+    "lib": ["ES2019"],
+    "types": ["node", "jest"],
+    "target": "ES2019",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "pretty": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "outDir": "dist",
+    "sourceMap": false
+  },
+  "include": ["src"],
+  "exclude": ["lib/**/*.spec.ts"]
+}
