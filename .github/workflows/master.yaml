@@ -6,9 +6,10 @@ on:
       - master
 
 jobs:
-  build:
+   build:
     name: Build
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         node-version:
@@ -23,9 +24,12 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: yarn
     - run: yarn build
+    - run: docker-compose up -d
+    - run: docker run --network container:kms appropriate/curl -s --retry 10 --retry-connrefused http://localhost:8080/
     - run: yarn test
       env:
         CI: true
+        NODE_ENV: test
 
   release:
     name: Release
@@ -40,13 +44,6 @@ jobs:
           node-version: 16
       - run: yarn
       - run: yarn build
-      - run: yarn test
-        env:
-          CI: true
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
