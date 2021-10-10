@@ -1,12 +1,9 @@
 name: Branches
 
 on:
-  pull_request:
-    branches:
-      - master
   push:
     branches-ignore:
-      - master
+      - main
 
 jobs:
   build:
