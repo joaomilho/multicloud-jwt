@@ -6,7 +6,7 @@
   "license": "MIT",
   "author": "Yo Lulkin <yo@lulk.in>",
   "scripts": {
-    "build": "rimraf dist && tsc -p tsconfig.prod.json",
+    "build": "rimraf dist && tsc",
     "test": "jest"
   },
   "engines": {
