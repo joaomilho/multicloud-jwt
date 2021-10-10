@@ -28,7 +28,7 @@ jobs:
     - run: yarn
     - run: yarn build
     - run: docker-compose up -d
-    - run: docker run --network container:kms appropriate/curl -s --retry 10 --retry-connrefused http://localhost:8081/
+    - run: docker run --network container:kms appropriate/curl -s --retry 10 --retry-connrefused http://localhost:8080/
     - run: yarn test
       env:
         CI: true
