@@ -7,7 +7,7 @@
   "author": "Yo Lulkin <yo@lulk.in>",
   "scripts": {
     "build": "rimraf dist && tsc",
-    "test": "jest"
+    "test": "AWS_SDK_LOAD_CONFIG=0 jest"
   },
   "engines": {
     "node": ">=12"
