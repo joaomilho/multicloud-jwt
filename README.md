@@ -23,3 +23,4 @@ const jwt = gcp.sign({ my: "payload" })
 
 gcp.verify(jwt) // true
 ```
+

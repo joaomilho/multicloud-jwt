@@ -14,7 +14,7 @@ export class AWS extends BaseClass {
 
   async sign(
     payload: Record<string, any>,
-    options: { expires?: Date } = {},
+    options: { exp?: Date } = {},
     signReq?: Omit<KMS.SignRequest, "Message" | "KeyId">
   ): Promise<string> {
     const body = this.getBody("AWS", payload, options);
